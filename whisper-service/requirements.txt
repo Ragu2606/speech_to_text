@@ -1,8 +1,8 @@
 flask==2.3.3
 flask-cors==4.0.0
-faster-whisper
-torch==1.13.1
-torchaudio==0.13.1
+faster-whisper>=0.10.0
+torch>=2.0.0
+torchaudio>=2.0.0
 numpy<2.0.0
 requests==2.31.0
 pydub==0.25.1

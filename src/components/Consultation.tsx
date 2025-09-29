@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { simpleTranscription } from '../utils/simpleTranscription';
-import { initializeSimpleChatGPTPipeline } from '../utils/simpleChatGPTPipeline';
+import { medicalAnalysisPipeline } from '../utils/medicalAnalysisPipeline';
 import PreDiagnosisCards from './PreDiagnosisCards';
 
 const Consultation: React.FC = () => {
@@ -43,8 +43,7 @@ const Consultation: React.FC = () => {
   const streamRef = useRef<MediaStream | null>(null);
   const audioChunkIntervalRef = useRef<number | null>(null);
   
-  // ChatGPT API Key - Replace with your actual API key
-  const CHATGPT_API_KEY = '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'; // TODO: Replace with your actual API key
+  // Ollama service is configured via localLLM utility
 
 
   // Check service status on component mount
@@ -218,55 +217,34 @@ const Consultation: React.FC = () => {
 
     try {
       setIsAnalyzing(true);
-      console.log('🤖 Starting ChatGPT analysis for transcript:', transcript);
+      console.log('🤖 Starting medical analysis pipeline: Whisper → Ollama');
+      console.log('📝 Transcript:', transcript);
       
-      // Initialize ChatGPT pipeline with API key
-      const pipeline = initializeSimpleChatGPTPipeline(CHATGPT_API_KEY);
+      // Use the medical analysis pipeline that integrates Whisper → Ollama
+      const analysisResult = await medicalAnalysisPipeline.processText(transcript);
       
-      // Check if pipeline is initialized
-      let pipelineStatus = pipeline.getStatus();
-      if (!pipelineStatus.initialized) {
-        console.log('Pipeline not initialized, attempting to reinitialize...');
-        await pipeline.reinitialize();
-        pipelineStatus = pipeline.getStatus();
-        if (!pipelineStatus.initialized) {
-          throw new Error('ChatGPT service failed to initialize. Please check your API key.');
-        }
-      }
-
-      console.log('✅ ChatGPT pipeline is ready, processing transcript...');
-      // Call ChatGPT for analysis
-      const analysis = await pipeline.processText(transcript);
-      
-      console.log('✅ ChatGPT analysis completed:', analysis);
-      setAiAnalysis(analysis);
+      console.log('✅ Medical analysis pipeline completed:', analysisResult);
+      setAiAnalysis(analysisResult);
       
       // Store the analysis in the global state
       useStore.getState().setConsultationData({
-        originalTranscript: analysis.originalTranscript,
-        translatedTranscript: analysis.originalTranscript,
-        symptoms: analysis.symptoms,
-        chiefComplaints: analysis.chiefComplaints,
-        recommendedMedicines: analysis.recommendedMedicines,
-        diagnosis: analysis.diagnosis,
-        notes: analysis.notes,
-        confidence: analysis.confidence,
-        summary: analysis.summary || `Patient consultation analysis completed with ${analysis.confidence}% confidence.`,
-        contentSegregation: analysis.contentSegregation || {
-          vitalSigns: [],
-          medications: analysis.recommendedMedicines,
-          procedures: [],
-          allergies: selectedPatient?.allergies || [],
-          familyHistory: selectedPatient?.familyHistory || [],
-          socialHistory: []
-        },
+        originalTranscript: analysisResult.originalTranscript,
+        translatedTranscript: analysisResult.translatedTranscript,
+        symptoms: analysisResult.symptoms,
+        chiefComplaints: analysisResult.chiefComplaints,
+        recommendedMedicines: analysisResult.recommendedMedicines,
+        diagnosis: analysisResult.diagnosis,
+        notes: analysisResult.notes,
+        confidence: analysisResult.confidence,
+        summary: analysisResult.summary,
+        contentSegregation: analysisResult.contentSegregation,
         duration: recordingTime
       });
       
     } catch (error) {
-      console.error('❌ ChatGPT analysis failed:', error);
+      console.error('❌ Medical analysis pipeline failed:', error);
       // Show error but don't block the user
-      alert(`ChatGPT analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nYou can still view the transcription and proceed manually.`);
+      alert(`Medical analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease ensure:\n1. Whisper service is running\n2. Ollama service is running\n3. All services are properly configured`);
     } finally {
       setIsAnalyzing(false);
     }
@@ -434,7 +412,7 @@ const Consultation: React.FC = () => {
                   >
                     <div className="flex items-center justify-center">
                       <Loader2 className="w-5 h-5 mr-2 animate-spin text-blue-600" />
-                      <span className="text-blue-800 font-medium">ChatGPT is analyzing the consultation...</span>
+                      <span className="text-blue-800 font-medium">Processing: Whisper → Ollama analysis...</span>
                     </div>
                   </motion.div>
                 )}
@@ -448,7 +426,7 @@ const Consultation: React.FC = () => {
                   >
                     <h4 className="text-lg font-semibold text-green-800 mb-3 flex items-center">
                       <Brain className="w-5 h-5 mr-2" />
-                      ChatGPT Analysis Results
+                      Medical Analysis Results (Whisper → Ollama)
                     </h4>
                     
                     <div className="space-y-3">
@@ -500,7 +478,7 @@ const Consultation: React.FC = () => {
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  Generate Medical Summary with ChatGPT
+                  Generate Medical Summary (Whisper → Ollama)
                 </motion.button>
               </motion.div>
             )}
@@ -627,7 +605,7 @@ const Consultation: React.FC = () => {
                       </p>
                       <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
                         <p className="text-sm text-blue-800">
-                          <strong>Note:</strong> After transcription, you can review the text and click "Generate Medical Summary" to analyze with ChatGPT.
+                          <strong>Note:</strong> After transcription, you can review the text and click "Generate Medical Summary" to process with Whisper → Ollama pipeline.
                         </p>
                       </div>
                     </motion.div>

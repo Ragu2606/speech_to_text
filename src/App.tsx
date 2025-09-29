@@ -8,12 +8,12 @@ import PatientDetails from './components/PatientDetails';
 import Consultation from './components/Consultation';
 import ConsultationSummary from './components/ConsultationSummary';
 import DarkModeToggle from './components/DarkModeToggle';
-import ChatGPTConfig from './components/ChatGPTConfig';
+import OllamaConfig from './components/OllamaConfig';
 import RealtimeConsultation from './components/RealtimeConsultation';
 
 function App() {
   const { currentScreen, setTheme, auth, initializeAuth, logout } = useStore();
-  const [showChatGPTConfig, setShowChatGPTConfig] = useState(false);
+  const [showOllamaConfig, setShowOllamaConfig] = useState(false);
 
   // Initialize theme and auth from localStorage
   useEffect(() => {
@@ -21,17 +21,17 @@ function App() {
     setTheme(savedTheme);
     initializeAuth();
     
-    // Check if ChatGPT API key is configured
-    const chatGPTApiKey = localStorage.getItem('chatgpt_api_key');
-    if (!chatGPTApiKey && auth.isAuthenticated) {
-      setShowChatGPTConfig(true);
+    // Check if Ollama is configured
+    const ollamaConfigured = localStorage.getItem('ollama_configured');
+    if (!ollamaConfigured && auth.isAuthenticated) {
+      setShowOllamaConfig(true);
     }
   }, [setTheme, initializeAuth, auth.isAuthenticated]);
 
   const renderCurrentScreen = () => {
-    // Show ChatGPT configuration if needed
-    if (showChatGPTConfig) {
-      return <ChatGPTConfig key="chatgpt-config" onConfigured={() => setShowChatGPTConfig(false)} />;
+    // Show Ollama configuration if needed
+    if (showOllamaConfig) {
+      return <OllamaConfig key="ollama-config" onConfigured={() => setShowOllamaConfig(false)} />;
     }
 
     switch (currentScreen) {

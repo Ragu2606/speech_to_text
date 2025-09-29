@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Whisper Speech-to-Text Service (Faster Whisper with CUDA)
+  # Whisper Speech-to-Text Service (Faster Whisper large-v2 with CUDA)
   whisper-service:
     build:
       context: ./whisper-service
@@ -15,14 +15,14 @@ services:
     volumes:
       - whisper_models:/app/models
     restart: unless-stopped
-    # Uncomment the following lines if you have NVIDIA Docker runtime
-    # deploy:
-    #   resources:
-    #     reservations:
-    #       devices:
-    #         - driver: nvidia
-    #           count: 1
-    #           capabilities: [gpu]
+    # Enable GPU support for NVIDIA Docker runtime
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
       interval: 30s

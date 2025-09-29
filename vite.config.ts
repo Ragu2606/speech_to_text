@@ -9,9 +9,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     define: {
       // Make environment variables available to the app
-      'process.env.VITE_CHATGPT_API_KEY': JSON.stringify(env.VITE_CHATGPT_API_KEY),
-      'process.env.VITE_OPENAI_BASE_URL': JSON.stringify(env.VITE_OPENAI_BASE_URL),
-      'process.env.VITE_CHATGPT_MODEL': JSON.stringify(env.VITE_CHATGPT_MODEL),
+      // Ollama runs locally, no API keys needed
     }
   }
 })

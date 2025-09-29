@@ -13,7 +13,7 @@ import {
   Loader2
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
-import { initializeSimpleChatGPTPipeline } from '../utils/simpleChatGPTPipeline';
+import { medicalAnalysisPipeline } from '../utils/medicalAnalysisPipeline';
 
 interface ConsultationData {
   originalTranscript: string;
@@ -70,8 +70,7 @@ const ConsultationSummary: React.FC = () => {
   const [isGenerating, setIsGenerating] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   
-  // ChatGPT API Key - Replace with your actual API key
-  const CHATGPT_API_KEY = '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'; // TODO: Replace with your actual API key
+  // Ollama service is configured via localLLM utility
 
   // Real Ollama analysis - no mock data
   useEffect(() => {
@@ -86,45 +85,22 @@ const ConsultationSummary: React.FC = () => {
       setIsGenerating(true);
       
       try {
-        // Initialize ChatGPT pipeline with API key
-        console.log('Initializing ChatGPT service with API key...');
-        const pipeline = initializeSimpleChatGPTPipeline(CHATGPT_API_KEY);
-        
-        // Check if pipeline is initialized
-        let pipelineStatus = pipeline.getStatus();
-        if (!pipelineStatus.initialized) {
-          console.log('Pipeline not initialized, attempting to reinitialize...');
-          await pipeline.reinitialize();
-          pipelineStatus = pipeline.getStatus();
-          if (!pipelineStatus.initialized) {
-            throw new Error('ChatGPT medical analysis pipeline failed to initialize. Please check your API key.');
-          }
-        }
-
-        console.log('✅ ChatGPT pipeline is ready, processing transcript...');
-        // Use ChatGPT to analyze the transcript
-        console.log('Using ChatGPT for medical analysis...');
-        const analysisResult = await pipeline.processText(transcript);
+        // Use the medical analysis pipeline: Whisper → Ollama
+        console.log('Using medical analysis pipeline: Whisper → Ollama...');
+        const analysisResult = await medicalAnalysisPipeline.processText(transcript);
         
         // Convert the analysis result to our consultation data format
         const consultationData: ConsultationData = {
           originalTranscript: analysisResult.originalTranscript,
-          translatedTranscript: analysisResult.originalTranscript, // Same as original since Whisper already translates
+          translatedTranscript: analysisResult.translatedTranscript,
           symptoms: analysisResult.symptoms,
           chiefComplaints: analysisResult.chiefComplaints,
           recommendedMedicines: analysisResult.recommendedMedicines,
           diagnosis: analysisResult.diagnosis,
           notes: analysisResult.notes,
           confidence: analysisResult.confidence,
-          summary: analysisResult.summary || `Patient consultation analysis completed with ${analysisResult.confidence}% confidence.`,
-          contentSegregation: analysisResult.contentSegregation || {
-            vitalSigns: [],
-            medications: analysisResult.recommendedMedicines,
-            procedures: [],
-            allergies: selectedPatient?.allergies || [],
-            familyHistory: selectedPatient?.familyHistory || [],
-            socialHistory: []
-          },
+          summary: analysisResult.summary,
+          contentSegregation: analysisResult.contentSegregation,
           duration: Math.floor(transcript.length / 10) // Rough estimate based on transcript length
         };
         
@@ -142,8 +118,8 @@ const ConsultationSummary: React.FC = () => {
           symptoms: ['Analysis failed - please check services'],
           chiefComplaints: 'Unable to analyze consultation - services unavailable',
           recommendedMedicines: ['Please restart services and try again'],
-          diagnosis: 'Analysis unavailable - check ChatGPT and other services',
-          notes: `Error: ${errorMessage}. Please ensure ChatGPT is configured and all services are available.`,
+          diagnosis: 'Analysis unavailable - check Whisper and Ollama services',
+          notes: `Error: ${errorMessage}. Please ensure Whisper and Ollama services are running and properly configured.`,
           confidence: 0,
           summary: 'Medical analysis failed due to service unavailability.',
           contentSegregation: {
@@ -287,7 +263,7 @@ const ConsultationSummary: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
             <div className="flex items-center justify-center space-x-3">
               <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
-              <span className="text-lg text-gray-600">Analyzing consultation with ChatGPT...</span>
+              <span className="text-lg text-gray-600">Processing: Whisper → Ollama analysis...</span>
             </div>
           </div>
         )}

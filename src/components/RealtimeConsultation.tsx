@@ -15,7 +15,7 @@ import {
 } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { realtimeTranscription, type TranscriptionResult } from '../utils/realtimeTranscription';
-import { initializeChatGPTMedicalPipeline } from '../utils/chatGPTMedicalPipeline';
+import { medicalAnalysisPipeline } from '../utils/medicalAnalysisPipeline';
 import PreDiagnosisCards from './PreDiagnosisCards';
 
 const RealtimeConsultation: React.FC = () => {
@@ -23,10 +23,7 @@ const RealtimeConsultation: React.FC = () => {
     selectedPatient, 
     setCurrentScreen,
     transcript,
-    setTranscript,
-    setMediaRecorder,
-    setAudioChunks,
-    mediaRecorder
+    setTranscript
   } = useStore();
 
   const [isRecording, setIsRecording] = useState(false);
@@ -35,7 +32,7 @@ const RealtimeConsultation: React.FC = () => {
   const [realtimeTranscripts, setRealtimeTranscripts] = useState<TranscriptionResult[]>([]);
   const [serviceStatus, setServiceStatus] = useState({
     realtime: false,
-    chatgpt: false,
+    ollama: false,
     overall: false
   });
 
@@ -73,29 +70,25 @@ const RealtimeConsultation: React.FC = () => {
       const translationResponse = await fetch('http://127.0.0.1:9001/health');
       const transcriptionStatus = realtimeResponse.ok && translationResponse.ok;
       
-      // Check ChatGPT service using environment variable
-      const chatGPTApiKey = import.meta.env.VITE_CHATGPT_API_KEY;
-      let chatGPTStatus = false;
-      if (chatGPTApiKey && chatGPTApiKey !== 'your_chatgpt_api_key_here') {
-        try {
-          const pipeline = initializeChatGPTMedicalPipeline(chatGPTApiKey);
-          const pipelineStatus = pipeline.getStatus();
-          chatGPTStatus = pipelineStatus.initialized;
-        } catch (error) {
-          console.error('ChatGPT service check failed:', error);
-        }
+      // Check Ollama service
+      let ollamaStatus = false;
+      try {
+        const response = await fetch('http://localhost:11434/api/tags');
+        ollamaStatus = response.ok;
+      } catch (error) {
+        console.error('Ollama service check failed:', error);
       }
 
       setServiceStatus({
         realtime: transcriptionStatus,
-        chatgpt: chatGPTStatus,
-        overall: transcriptionStatus && chatGPTStatus
+        ollama: ollamaStatus,
+        overall: transcriptionStatus && ollamaStatus
       });
     } catch (error) {
       console.error('Service status check failed:', error);
       setServiceStatus({
         realtime: false,
-        chatgpt: false,
+        ollama: false,
         overall: false
       });
     }
@@ -181,11 +174,34 @@ const RealtimeConsultation: React.FC = () => {
 
     setIsProcessing(true);
     try {
-      // Navigate to summary screen - the ConsultationSummary component will handle ChatGPT analysis
+      console.log('🤖 Starting medical analysis pipeline: Whisper → Ollama');
+      console.log('📝 Processing transcript:', transcript);
+      
+      // Use the medical analysis pipeline to process the transcript
+      const analysisResult = await medicalAnalysisPipeline.processText(transcript);
+      
+      console.log('✅ Medical analysis completed, navigating to summary');
+      
+      // Store the analysis result in the global state
+      useStore.getState().setConsultationData({
+        originalTranscript: analysisResult.originalTranscript,
+        translatedTranscript: analysisResult.translatedTranscript,
+        symptoms: analysisResult.symptoms,
+        chiefComplaints: analysisResult.chiefComplaints,
+        recommendedMedicines: analysisResult.recommendedMedicines,
+        diagnosis: analysisResult.diagnosis,
+        notes: analysisResult.notes,
+        confidence: analysisResult.confidence,
+        summary: analysisResult.summary,
+        contentSegregation: analysisResult.contentSegregation,
+        duration: Math.floor(transcript.length / 10)
+      });
+      
+      // Navigate to summary screen
       setCurrentScreen('summary');
     } catch (error) {
       console.error('Error generating summary:', error);
-      alert('Error generating summary. Please try again.');
+      alert(`Medical analysis failed: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease ensure Whisper and Ollama services are running.`);
     } finally {
       setIsProcessing(false);
     }
@@ -264,7 +280,7 @@ const RealtimeConsultation: React.FC = () => {
             <div className="glass rounded-xl p-3 flex items-center">
               <Languages className={`w-4 h-4 mr-2 ${serviceStatus.overall ? 'text-green-500' : 'text-yellow-500'}`} />
               <span className={`text-sm ${serviceStatus.overall ? 'text-green-600' : 'text-yellow-600'}`}>
-                {serviceStatus.overall ? 'Real-time → ChatGPT' : 'Services Unavailable'}
+                {serviceStatus.overall ? 'Real-time → Whisper → Ollama' : 'Services Unavailable'}
               </span>
             </div>
             <div className="glass rounded-xl p-3 flex items-center">
@@ -278,13 +294,13 @@ const RealtimeConsultation: React.FC = () => {
               </span>
             </div>
             <div className="glass rounded-xl p-3 flex items-center">
-              {serviceStatus.chatgpt ? (
+              {serviceStatus.ollama ? (
                 <Wifi className="w-4 h-4 mr-2 text-green-500" />
               ) : (
                 <WifiOff className="w-4 h-4 mr-2 text-red-500" />
               )}
-              <span className={`text-sm ${serviceStatus.chatgpt ? 'text-green-600' : 'text-red-600'}`}>
-                ChatGPT: {serviceStatus.chatgpt ? 'Online' : 'Offline'}
+              <span className={`text-sm ${serviceStatus.ollama ? 'text-green-600' : 'text-red-600'}`}>
+                Ollama: {serviceStatus.ollama ? 'Online' : 'Offline'}
               </span>
             </div>
           </div>
@@ -497,11 +513,11 @@ const RealtimeConsultation: React.FC = () => {
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={generateSummary}
-                  disabled={!serviceStatus.chatgpt || isProcessing}
+                  disabled={!serviceStatus.ollama || isProcessing}
                   className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 disabled:from-gray-400 disabled:to-gray-500 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 flex items-center justify-center"
                 >
                   <Sparkles className="w-5 h-5 mr-2" />
-                  {isProcessing ? 'Generating...' : 'Generate Medical Summary with ChatGPT'}
+                  {isProcessing ? 'Generating...' : 'Generate Medical Summary with Ollama'}
                 </motion.button>
               </motion.div>
             )}
@@ -532,7 +548,7 @@ const RealtimeConsultation: React.FC = () => {
                   Generating Summary
                 </h3>
                 <p className="text-primary-600">
-                  Analyzing transcription with ChatGPT → Generating medical summary...
+                  Processing: Whisper → Ollama → Generating medical summary...
                 </p>
               </motion.div>
             </motion.div>
