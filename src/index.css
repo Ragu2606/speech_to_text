@@ -1,0 +1,250 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(0, 0, 0, 0.87);
+  /* 60% Primary - White background */
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* 60% Primary - White background */
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  /* Improved mobile viewport handling */
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Dark mode styles */
+[data-theme="dark"] {
+  color: rgba(255, 255, 255, 0.87);
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+}
+
+[data-theme="dark"] body {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 100%);
+}
+
+/* Dark mode text overrides */
+[data-theme="dark"] .text-primary-900 {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="dark"] .text-primary-600 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="dark"] .text-primary-500 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="dark"] .text-primary-400 {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Dark mode background overrides */
+[data-theme="dark"] .bg-primary-50 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .bg-primary-100 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="dark"] .bg-secondary-50 {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="dark"] .bg-accent-100 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.glass {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.1);
+}
+
+[data-theme="dark"] .glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+.glass-dark {
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Ocean theme */
+[data-theme="ocean"] {
+  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%);
+}
+
+[data-theme="ocean"] body {
+  background: linear-gradient(135deg, #0ea5e9 0%, #1e40af 100%);
+}
+
+/* Forest theme */
+[data-theme="forest"] {
+  color: rgba(255, 255, 255, 0.9);
+  background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
+}
+
+[data-theme="forest"] body {
+  background: linear-gradient(135deg, #065f46 0%, #064e3b 100%);
+}
+
+/* Additional overrides for ocean/forest to match dark readability */
+[data-theme="ocean"] .text-primary-900,
+[data-theme="forest"] .text-primary-900 {
+  color: rgba(255, 255, 255, 0.95);
+}
+
+[data-theme="ocean"] .text-primary-600,
+[data-theme="forest"] .text-primary-600 {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="ocean"] .text-primary-500,
+[data-theme="forest"] .text-primary-500 {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+[data-theme="ocean"] .text-primary-400,
+[data-theme="forest"] .text-primary-400 {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+[data-theme="ocean"] .bg-primary-50,
+[data-theme="forest"] .bg-primary-50 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="ocean"] .bg-primary-100,
+[data-theme="forest"] .bg-primary-100 {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+[data-theme="ocean"] .bg-secondary-50,
+[data-theme="forest"] .bg-secondary-50 {
+  background-color: rgba(59, 130, 246, 0.1);
+}
+
+[data-theme="ocean"] .bg-accent-100,
+[data-theme="forest"] .bg-accent-100 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+[data-theme="ocean"] .glass,
+[data-theme="forest"] .glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Responsive utilities */
+@media (max-width: 640px) {
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+  
+  /* Mobile-first glass morphism adjustments */
+  .glass {
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+  }
+  
+  /* Improved touch targets for mobile */
+  button, .button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Improved focus states for accessibility */
+button:focus,
+input:focus,
+textarea:focus,
+select:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .glass {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid #000;
+  }
+  
+  [data-theme="dark"] .glass {
+    background: rgba(0, 0, 0, 0.9);
+    border: 2px solid #fff;
+  }
+}
+
+/* OTP Input specific styles */
+.otp-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  padding: 0 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .otp-container {
+    gap: 0.5rem;
+    padding: 0;
+  }
+}
+
+@media (min-width: 768px) {
+  .otp-container {
+    gap: 0.75rem;
+  }
+}
+
+/* Ensure OTP inputs are always visible */
+.otp-input {
+  flex-shrink: 0;
+  min-width: 2.5rem;
+  max-width: 3.5rem;
+}
+
+/* Header positioning fixes */
+.fixed-header {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 40;
+  max-width: calc(100vw - 2rem);
+}
+
+@media (min-width: 640px) {
+  .fixed-header {
+    top: 1.5rem;
+    right: 1.5rem;
+    max-width: 20rem;
+  }
+}

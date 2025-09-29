@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # Whisper Speech-to-Text Service (Faster Whisper with CUDA)
+  whisper-service:
+    build:
+      context: ./whisper-service
+      dockerfile: Dockerfile
+    ports:
+      - "9000:9000"
+    environment:
+      - WHISPER_MODEL=large-v2 # Using large-v2 model for better accuracy
+      - LANGUAGE=auto  # Auto-detect language or specify 'gu' for Gujarati
+      - CUDA_VISIBLE_DEVICES=0  # Use first GPU if available
+    volumes:
+      - whisper_models:/app/models
+    restart: unless-stopped
+    # Uncomment the following lines if you have NVIDIA Docker runtime
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s  # Allow more time for Faster Whisper model download
+
+  # Translation Service (Gujarati to English)
+  translation-service:
+    build:
+      context: ./translation-service
+      dockerfile: Dockerfile
+    ports:
+      - "9001:9001"
+    environment:
+      - MODEL_NAME=Helsinki-NLP/opus-mt-mul-en
+      - TORCH_HOME=/app/models/torch
+      - TRANSFORMERS_CACHE=/app/models/transformers
+    volumes:
+      - translation_models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 180s  # Allow time for model download
+
+  # Nginx Reverse Proxy (Optional - for production)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - whisper-service
+      - translation-service
+    restart: unless-stopped
+    profiles:
+      - production
+
+volumes:
+  whisper_models:
+    driver: local
+  translation_models:
+    driver: local
+
+networks:
+  default:
+    name: gujarati-transcription-network
