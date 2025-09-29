@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Server, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 import { localLLM } from '../utils/localLLM';
+import { getServiceEndpoint, isVMEnvironment } from '../config/services';
 
 interface OllamaConfigProps {
   onConfigured: () => void;
@@ -26,7 +27,7 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
 
     try {
       // Test connection to Ollama
-      const response = await fetch('http://localhost:11434/api/tags', {
+      const response = await fetch('https://:11434/api/tags', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -61,7 +62,8 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
     } catch (error) {
       console.error('Ollama connection error:', error);
       setOllamaStatus('disconnected');
-      setError('Cannot connect to Ollama service. Please ensure Ollama is running on localhost:11434.');
+      const ollamaUrl = getServiceEndpoint('ollama', !isVMEnvironment());
+      setError(`Cannot connect to Ollama service. Please ensure Ollama is running on ${ollamaUrl}.`);
     } finally {
       setIsLoading(false);
     }
@@ -115,7 +117,7 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
               </div>
             </div>
             <p className="text-xs text-gray-500">
-              Service: http://localhost:11434
+              Service: {getServiceEndpoint('ollama', !isVMEnvironment())}
             </p>
           </div>
 
@@ -166,7 +168,7 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
             <li>1. Install Ollama from <a href="https://ollama.ai" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">ollama.ai</a></li>
             <li>2. Start Ollama service</li>
             <li>3. Pull a model: <code className="bg-gray-200 px-1 rounded">ollama pull llama3.2</code></li>
-            <li>4. Ensure Ollama is running on localhost:11434</li>
+            <li>4. Ensure Ollama is running on {getServiceEndpoint('ollama', !isVMEnvironment())}</li>
           </ol>
         </div>
       </motion.div>

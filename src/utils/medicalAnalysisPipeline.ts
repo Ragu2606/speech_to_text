@@ -1,6 +1,8 @@
 // Medical Analysis Pipeline Service
 // Integrates: Whisper (Speech-to-Text) -> Translation -> Ollama (Content Segregation)
 
+import { getServiceEndpoint, isVMEnvironment } from '../config/services';
+
 export interface MedicalAnalysisResult {
   originalTranscript: string;
   translatedTranscript: string;
@@ -34,10 +36,11 @@ export class MedicalAnalysisPipeline {
   private isInitialized: boolean = false;
 
   constructor(config: Partial<PipelineConfig> = {}) {
+    const useLocal = !isVMEnvironment();
     this.config = {
-      whisperEndpoint: config.whisperEndpoint || 'http://127.0.0.1:9000',
-      translationEndpoint: config.translationEndpoint || 'http://127.0.0.1:9001',
-      ollamaEndpoint: config.ollamaEndpoint || 'http://localhost:11434',
+      whisperEndpoint: config.whisperEndpoint || getServiceEndpoint('whisper', useLocal),
+      translationEndpoint: config.translationEndpoint || getServiceEndpoint('translation', useLocal),
+      ollamaEndpoint: config.ollamaEndpoint || getServiceEndpoint('ollama', useLocal),
       targetLanguage: config.targetLanguage || 'en',
       ollamaModel: config.ollamaModel || 'llama3.2:latest',
       ...config
