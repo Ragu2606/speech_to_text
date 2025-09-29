@@ -27,7 +27,7 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
 
     try {
       // Test connection to Ollama
-      const response = await fetch('https://:11434/api/tags', {
+      const response = await fetch('https://48.216.181.122:11434/api/tags', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
