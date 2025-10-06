@@ -129,4 +129,12 @@ def supported_languages():
     })
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=9001, debug=False)
+    # Run with SSL support if certificates are available
+    ssl_context = None
+    if os.path.exists('/app/ssl/server.crt') and os.path.exists('/app/ssl/server.key'):
+        ssl_context = ('/app/ssl/server.crt', '/app/ssl/server.key')
+        logger.info("SSL certificates found, enabling HTTPS")
+    else:
+        logger.info("No SSL certificates found, running HTTP only")
+    
+    app.run(host='0.0.0.0', port=9001, debug=False, ssl_context=ssl_context)

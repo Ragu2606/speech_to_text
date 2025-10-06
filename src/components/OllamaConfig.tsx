@@ -32,6 +32,9 @@ const OllamaConfig: React.FC<OllamaConfigProps> = ({ onConfigured }) => {
         headers: {
           'Content-Type': 'application/json',
         },
+        // Allow self-signed certificates for development
+        // @ts-ignore
+        rejectUnauthorized: false
       });
 
       if (response.ok) {

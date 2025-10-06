@@ -66,14 +66,26 @@ const RealtimeConsultation: React.FC = () => {
   const checkServiceStatus = async () => {
     try {
       // Check real-time transcription service
-      const realtimeResponse = await fetch('http://127.0.0.1:9002/health');
-      const translationResponse = await fetch('http://127.0.0.1:9001/health');
+      const realtimeResponse = await fetch('https://localhost:443/api/whisper/health', {
+        // Allow self-signed certificates for development
+        // @ts-ignore
+        rejectUnauthorized: false
+      });
+      const translationResponse = await fetch('https://localhost:443/api/translation/health', {
+        // Allow self-signed certificates for development
+        // @ts-ignore
+        rejectUnauthorized: false
+      });
       const transcriptionStatus = realtimeResponse.ok && translationResponse.ok;
       
       // Check Ollama service
       let ollamaStatus = false;
       try {
-        const response = await fetch('http://localhost:11434/api/tags');
+        const response = await fetch('https://48.216.181.122:11434/api/tags', {
+          // Allow self-signed certificates for development
+          // @ts-ignore
+          rejectUnauthorized: false
+        });
         ollamaStatus = response.ok;
       } catch (error) {
         console.error('Ollama service check failed:', error);

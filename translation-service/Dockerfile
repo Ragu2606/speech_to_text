@@ -19,6 +19,9 @@ COPY app.py .
 # Create models directory
 RUN mkdir -p /app/models/torch /app/models/transformers
 
+# Create SSL directory
+RUN mkdir -p /app/ssl
+
 EXPOSE 9001
 
 # Health check

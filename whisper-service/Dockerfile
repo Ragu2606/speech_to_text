@@ -32,6 +32,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app.py .
 COPY verify_cuda.py .
 
+# Create SSL directory
+RUN mkdir -p /app/ssl
+
 # Expose port
 EXPOSE 9000
 

@@ -41,8 +41,8 @@ export class LiveTranscriptionService {
   private onErrorCallback?: (error: Error) => void;
 
   constructor(
-    whisperEndpoint: string = 'http://127.0.0.1:9000',
-    translationEndpoint: string = 'http://127.0.0.1:9001'
+    whisperEndpoint: string = 'https://localhost:443/api/whisper',
+    translationEndpoint: string = 'https://localhost:443/api/translation'
   ) {
     this.whisperEndpoint = whisperEndpoint;
     this.translationEndpoint = translationEndpoint;
@@ -72,7 +72,10 @@ export class LiveTranscriptionService {
         }),
         fetch(`${this.translationEndpoint}/health`, { 
           method: 'GET',
-          signal: AbortSignal.timeout(3000) // 3 second timeout
+          signal: AbortSignal.timeout(3000), // 3 second timeout
+          // Allow self-signed certificates for development
+          // @ts-ignore
+          rejectUnauthorized: false
         })
       ]);
 
@@ -352,6 +355,9 @@ export class LiveTranscriptionService {
     const response = await fetch(`${this.whisperEndpoint}/transcribe`, {
       method: 'POST',
       body: formData,
+      // Allow self-signed certificates for development
+      // @ts-ignore
+      rejectUnauthorized: false
     });
 
     if (!response.ok) {
@@ -395,6 +401,9 @@ export class LiveTranscriptionService {
         target_language: targetLang,
         model: 'opus-mt-mul-en'
       }),
+      // Allow self-signed certificates for development
+      // @ts-ignore
+      rejectUnauthorized: false
     });
 
     if (!response.ok) {
@@ -458,7 +467,10 @@ export class LiveTranscriptionService {
           signal: AbortSignal.timeout(2000) 
         }).then(r => r.ok),
         fetch(`${this.translationEndpoint}/health`, { 
-          signal: AbortSignal.timeout(2000) 
+          signal: AbortSignal.timeout(2000),
+          // Allow self-signed certificates for development
+          // @ts-ignore
+          rejectUnauthorized: false
         }).then(r => r.ok)
       ]);
 

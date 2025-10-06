@@ -5,9 +5,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:https": "vite --host 0.0.0.0 --port 5173",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "start:https": "npm run dev:https",
+    "docker:https": "docker-compose --profile https up -d",
+    "docker:stop": "docker-compose down",
+    "ssl:generate": "node -e \"const { execSync } = require('child_process'); execSync('ssl/generate-certs.bat', { stdio: 'inherit' })\""
   },
   "dependencies": {
     "framer-motion": "^12.23.13",

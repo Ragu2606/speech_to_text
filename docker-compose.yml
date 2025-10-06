@@ -7,13 +7,14 @@ services:
       context: ./whisper-service
       dockerfile: Dockerfile
     ports:
-      - "9000:9000"
+      - "9000:9000"  # Internal port (not exposed externally in HTTPS mode)
     environment:
       - WHISPER_MODEL=large-v2 # Using large-v2 model for better accuracy
       - LANGUAGE=auto  # Auto-detect language or specify 'gu' for Gujarati
       - CUDA_VISIBLE_DEVICES=0  # Use first GPU if available
     volumes:
       - whisper_models:/app/models
+      - ./ssl:/app/ssl:ro  # SSL certificates
     restart: unless-stopped
     # Enable GPU support for NVIDIA Docker runtime
     deploy:
@@ -29,6 +30,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 180s  # Allow more time for Faster Whisper model download
+    networks:
+      - app-network
 
   # Translation Service (Gujarati to English)
   translation-service:
@@ -36,13 +39,14 @@ services:
       context: ./translation-service
       dockerfile: Dockerfile
     ports:
-      - "9001:9001"
+      - "9001:9001"  # Internal port (not exposed externally in HTTPS mode)
     environment:
       - MODEL_NAME=Helsinki-NLP/opus-mt-mul-en
       - TORCH_HOME=/app/models/torch
       - TRANSFORMERS_CACHE=/app/models/transformers
     volumes:
       - translation_models:/app/models
+      - ./ssl:/app/ssl:ro  # SSL certificates
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:9001/health"]
@@ -50,20 +54,26 @@ services:
       timeout: 10s
       retries: 3
       start_period: 180s  # Allow time for model download
+    networks:
+      - app-network
 
-  # Nginx Reverse Proxy (Optional - for production)
+  # Nginx Reverse Proxy with HTTPS
   nginx:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "443:443"  # HTTPS port
+      - "80:80"    # HTTP redirect port
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro  # SSL certificates
     depends_on:
       - whisper-service
       - translation-service
     restart: unless-stopped
+    networks:
+      - app-network
     profiles:
-      - production
+      - https
 
 volumes:
   whisper_models:
@@ -72,5 +82,7 @@ volumes:
     driver: local
 
 networks:
+  app-network:
+    driver: bridge
   default:
     name: gujarati-transcription-network

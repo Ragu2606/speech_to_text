@@ -17,7 +17,7 @@ export class SimpleTranscriptionService {
 
   constructor(config: Partial<SimpleTranscriptionConfig> = {}) {
     this.config = {
-      whisperEndpoint: config.whisperEndpoint || 'http://127.0.0.1:9000',
+      whisperEndpoint: config.whisperEndpoint || 'https://localhost:443/api/whisper',
       ...config
     };
     this.initialize();
@@ -36,7 +36,15 @@ export class SimpleTranscriptionService {
   }
 
   private async checkWhisperService(): Promise<void> {
-    const response = await fetch(`${this.config.whisperEndpoint}/health`);
+    const response = await fetch(`${this.config.whisperEndpoint}/health`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      // Allow self-signed certificates for development
+      // @ts-ignore
+      rejectUnauthorized: false
+    });
     if (!response.ok) {
       throw new Error('Whisper service not available');
     }
@@ -61,7 +69,10 @@ export class SimpleTranscriptionService {
       console.log('Sending audio to Whisper for transcription...');
       const response = await fetch(`${this.config.whisperEndpoint}/transcribe`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        // Allow self-signed certificates for development
+        // @ts-ignore
+        rejectUnauthorized: false
       });
 
       if (!response.ok) {
