@@ -7,7 +7,7 @@ services:
       context: ./whisper-service
       dockerfile: Dockerfile
     ports:
-      - "9000:9000"  # Internal port (not exposed externally in HTTPS mode)
+      - "48.216.181.122:9000:9000"  # Whisper service port bound to public IP
     environment:
       - WHISPER_MODEL=large-v2 # Using large-v2 model for better accuracy
       - LANGUAGE=auto  # Auto-detect language or specify 'gu' for Gujarati
@@ -39,7 +39,7 @@ services:
       context: ./translation-service
       dockerfile: Dockerfile
     ports:
-      - "9001:9001"  # Internal port (not exposed externally in HTTPS mode)
+      - "48.216.181.122:9001:9001"  # Translation service port bound to public IP
     environment:
       - MODEL_NAME=Helsinki-NLP/opus-mt-mul-en
       - TORCH_HOME=/app/models/torch
@@ -61,8 +61,8 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "443:443"  # HTTPS port
-      - "80:80"    # HTTP redirect port
+      - "48.216.181.122:443:443"  # HTTPS port
+      - "48.216.181.122:80:80"    # HTTP redirect port
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./ssl:/etc/nginx/ssl:ro  # SSL certificates

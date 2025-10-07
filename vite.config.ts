@@ -15,7 +15,7 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     server: {
-      host: '0.0.0.0', // Allow external connections
+      host: '48.216.181.122', // Use VM public IP
       port: 5173,
       strictPort: true,
       https: httpsConfig, // Enable HTTPS if certificates exist
@@ -23,13 +23,13 @@ export default defineConfig(({ mode }) => {
       proxy: {
         // Proxy API requests to backend services
         '/api/whisper': {
-          target: 'https://localhost:443',
+          target: 'https://48.216.181.122:443',
           changeOrigin: true,
           secure: false, // Allow self-signed certificates
           rewrite: (path) => path.replace(/^\/api\/whisper/, '/api/whisper')
         },
         '/api/translation': {
-          target: 'https://localhost:443',
+          target: 'https://48.216.181.122:443',
           changeOrigin: true,
           secure: false, // Allow self-signed certificates
           rewrite: (path) => path.replace(/^\/api\/translation/, '/api/translation')

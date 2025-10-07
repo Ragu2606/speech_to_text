@@ -1,10 +1,10 @@
-FROM nvidia/cuda:12.4-devel-ubuntu22.04
+FROM nvidia/cuda:12.4.1-devel-ubuntu22.04
 
 WORKDIR /app
 
 # Set environment variables for CUDA
 ENV DEBIAN_FRONTEND=noninteractive
-ENV CUDA_HOME=/usr/local/cuda-12.4
+ENV CUDA_HOME=/usr/local/cuda-12.4.1
 ENV PATH=${CUDA_HOME}/bin:${PATH}
 ENV LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH}
 
